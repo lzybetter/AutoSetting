@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/choose_time_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
+    <TextClock
+        android:id="@+id/showClock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="40sp"
+        android:layout_below="@id/choose_time_toolbar"
+        android:layout_marginTop="48dp"
+        android:layout_centerHorizontal="true"
+        android:format24Hour="HH:mm"
+        android:format12Hour="hh:mm aa"  />
+
+    <TextView
+        android:id="@+id/showSelectedTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:gravity="center_horizontal"
+        android:text="请选择时间"
+        android:textSize="48dp"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/time_confirm"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="64dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/showSelectedTime"
+        android:src="@drawable/ic_confirm"/>
+
+</RelativeLayout>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<litepal>
+    <dbname value="if_action_save"></dbname>
+    <version value="1"></version>
+
+    <list>
+        <mapping class="shanghai.lzybetter.autosetting.Class.If_Action_Save"></mapping>
+    </list>
+</litepal>
