@@ -17,16 +17,13 @@ import shanghai.lzybetter.autosetting.Action.Then;
 import shanghai.lzybetter.autosetting.Application.MyApplication;
 import shanghai.lzybetter.autosetting.Class.If_Action_Save;
 
+import static android.os.Build.VERSION.SDK_INT;
 import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_RING;
 import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_SILENT;
 import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_VIBRATE;
 import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_WIFI_OFF;
 import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_WIFI_STATE;
 import static shanghai.lzybetter.autosetting.Application.MyApplication.getContext;
-
-/**
- * Created by lzybetter on 2017/3/14.
- */
 
 public class WIFIStateReciever extends BroadcastReceiver {
     @Override
@@ -73,8 +70,14 @@ public class WIFIStateReciever extends BroadcastReceiver {
                             PendingIntent pi = PendingIntent.getBroadcast(getContext(),
                                     0, intent_delay, 0);
                             long delayTime = System.currentTimeMillis() + 30 * 1000;
-                            alarmManager.set(AlarmManager.RTC_WAKEUP,
-                                    delayTime, pi);//延时30s，如果30s后仍未连接到所指定的WIFI则执行内容
+                            if(SDK_INT >= 19){
+                                //这个延时希望时间上准确一点，所在API19以上使用了setExact
+                                alarmManager.setExact(AlarmManager.RTC_WAKEUP,
+                                        delayTime, pi);//延时30s，如果30s后仍未连接到所指定的WIFI则执行内容
+                            }else{
+                                alarmManager.set(AlarmManager.RTC_WAKEUP,
+                                        delayTime, pi);//延时30s，如果30s后仍未连接到所指定的WIFI则执行内容
+                            }
                         }
                     }
                 }
