@@ -70,6 +70,7 @@ public class Choose_time extends BaseActivity {
                     String o_action = getIntent().getStringExtra("o_action");
                     intent.putExtra("o_if",o_if);
                     intent.putExtra("o_action",o_action);
+                    intent.putExtra("type",TYPE_TIME);
                     String time = (String) showSelectedTime.getText();
                     String n_if = "在" + time + "后";
                     intent.putExtra("n_if",n_if);

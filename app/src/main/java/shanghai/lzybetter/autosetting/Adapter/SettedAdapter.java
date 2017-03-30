@@ -164,7 +164,7 @@ public class SettedAdapter extends RecyclerView.Adapter<SettedAdapter.ViewHolder
                                 Intent intent_time = new Intent(mContext, TimeReceiver.class);
                                 PendingIntent pi = PendingIntent.getBroadcast(mContext,
                                         id,intent_time,0);
-                                alarmManager.cancel(pi);
+                                alarmManager.cancel(pi);//取消闹钟
                             }else if(selected.getType() == TYPE_WIFI_OFF){
                                 new Thread(new Runnable() {
                                     @Override

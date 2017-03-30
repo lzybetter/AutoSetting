@@ -1,5 +1,7 @@
 package shanghai.lzybetter.autosetting.Activity;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.ActionBar;
@@ -17,9 +19,16 @@ import android.widget.Toast;
 
 import org.litepal.crud.DataSupport;
 
+import java.util.Calendar;
+
 import shanghai.lzybetter.autosetting.Class.If_Action_Save;
 import shanghai.lzybetter.autosetting.R;
+import shanghai.lzybetter.autosetting.Reciever.TimeReceiver;
 
+import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_RING;
+import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_SILENT;
+import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_TIME;
+import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_VIBRATE;
 import static shanghai.lzybetter.autosetting.Application.MyApplication.TYPE_WIFI_STATE;
 
 public class EditView extends BaseActivity {
@@ -28,6 +37,8 @@ public class EditView extends BaseActivity {
     private TextView n_if_show,n_action_show;
     private LinearLayout n_if_lin, n_action_lin;
     private int n_action_type;
+    private int o_action_type;
+
 
     private String o_if,o_action;
     private String n_if,n_action;
@@ -57,6 +68,19 @@ public class EditView extends BaseActivity {
         Intent intent = getIntent();
         o_if = intent.getStringExtra("o_if");
         o_action = intent.getStringExtra("o_action");
+        switch (o_action){
+            case "静音":
+                o_action_type = TYPE_SILENT;
+                break;
+            case "震动":
+                o_action_type = TYPE_VIBRATE;
+                break;
+            case "响铃":
+                o_action_type = TYPE_RING;
+                break;
+            default:
+                break;
+        }
         type = intent.getIntExtra("type",0);
         n_if = intent.getStringExtra("n_if");
         n_action = intent.getStringExtra("n_action");
@@ -100,8 +124,51 @@ public class EditView extends BaseActivity {
                         if_action_save.setAction_title(n_action);
                         if_action_save.setAction_type(n_action_type);
                     }
+                    if(type == TYPE_TIME){
+                        if(n_if_show.getText() != null) {
+                            //如果修改的触发条件是时间，那么需要取消原有的闹钟设置，改为现有的时间
+                            String time = n_if.replace("在", "").replace("后", "");
+                            Calendar calendar_n = Calendar.getInstance();
+                            calendar_n.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time.split(":")[0]));
+                            calendar_n.set(Calendar.MINUTE, Integer.valueOf(time.split(":")[1]));
+                            calendar_n.set(Calendar.SECOND, 0);
+                            calendar_n.set(Calendar.MILLISECOND, 0);
+                            int id_n = (int) (calendar_n.getTimeInMillis() / 60 / 1000);//生成现在的新ID
+                            time = o_if.replace("在", "").replace("后", "");
+                            Calendar calendar_o = Calendar.getInstance();
+                            calendar_o.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time.split(":")[0]));
+                            calendar_o.set(Calendar.MINUTE, Integer.valueOf(time.split(":")[1]));
+                            calendar_o.set(Calendar.SECOND, 0);
+                            calendar_o.set(Calendar.MILLISECOND, 0);
+                            int id_o = (int) (calendar_o.getTimeInMillis() / 60 / 1000);//原来的ID
+                            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                            Intent intent_time = new Intent(this, TimeReceiver.class);
+                            PendingIntent pi_o = PendingIntent.getBroadcast(this,
+                                    id_o,intent_time,0);
+                            alarmManager.cancel(pi_o);//取消原始的闹钟
+                            PendingIntent pi_n = PendingIntent.getBroadcast(this,
+                                    id_n,intent_time,0);
+                            if(n_action_show.getText() != null){
+                                intent_time.putExtra("action_type",n_action_type);
+                            }else {
+                                intent_time.putExtra("action_type",o_action_type);
+                            }
+                            //设置新的闹钟
+                            if(calendar_n.getTimeInMillis() <= System.currentTimeMillis()){
+                                //设定的时间比当前时间小，将触发时间设为第二天的设定时刻
+                                long trrige_Time = calendar_n.getTimeInMillis()+24*60*60*1000;
+                                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                                        trrige_Time,24*60*60*1000, pi_n);
+                            }else{
+                                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                                        calendar_n.getTimeInMillis(),24*60*60*1000,
+                                        pi_n);
+                            }
+                        }
+                    }
                     if_action_save.updateAll("if_title = ? and action_title = ?",o_if,o_action);
                     Toast.makeText(EditView.this, "保存成功", Toast.LENGTH_SHORT).show();
+                    isSaved = true;//已经保存，将isSaved设置为true
                 }
                 Intent intent1 = new Intent(EditView.this,MainActivity.class);
                 startActivity(intent1);
@@ -116,6 +183,21 @@ public class EditView extends BaseActivity {
                         DataSupport.deleteAll(If_Action_Save.class,
                                 "if_title = ? and action_title = ?",o_if
                                 ,o_action);
+                        if(type == TYPE_TIME){
+                            String time = n_if.replace("在", "").replace("后", "");
+                            Calendar calendar_o = Calendar.getInstance();
+                            calendar_o.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time.split(":")[0]));
+                            calendar_o.set(Calendar.MINUTE, Integer.valueOf(time.split(":")[1]));
+                            calendar_o.set(Calendar.SECOND, 0);
+                            calendar_o.set(Calendar.MILLISECOND, 0);
+                            int id_o = (int) (calendar_o.getTimeInMillis() / 60 / 1000);//原来的ID
+                            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                            Intent intent_time = new Intent(EditView.this, TimeReceiver.class);
+                            intent_time.putExtra("action_type",n_action_type);
+                            PendingIntent pi_o = PendingIntent.getBroadcast(EditView.this,
+                                    id_o,intent_time,0);
+                            alarmManager.cancel(pi_o);//取消闹钟
+                        }
                         Intent intent = new Intent(EditView.this,MainActivity.class);
                         startActivity(intent);
                     }

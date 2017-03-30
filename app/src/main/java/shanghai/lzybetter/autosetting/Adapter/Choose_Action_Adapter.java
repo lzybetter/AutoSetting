@@ -141,9 +141,16 @@ public class Choose_Action_Adapter extends RecyclerView.Adapter<Choose_Action_Ad
                                 intent_time.putExtra("action_type",choose_action.getType());
                                 PendingIntent pi = PendingIntent.getBroadcast(mContext,
                                         id,intent_time,0);
-                                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-                                        calendar.getTimeInMillis(),24*60*60*1000,
-                                        pi);
+                                if(calendar.getTimeInMillis() <= System.currentTimeMillis()){
+                                    //设定的时间比当前时间小，将触发时间设为第二天的设定时刻
+                                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                                            calendar.getTimeInMillis()+24*60*60*1000,24*60*60*1000,
+                                            pi);
+                                }else{
+                                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                                            calendar.getTimeInMillis(),24*60*60*1000,
+                                            pi);
+                                }
                             }else if(choose_action.getIf_type() == TYPE_WIFI_OFF){
                                 PackageManager manager =  mContext.getPackageManager();
                                 Intent test = new Intent("ConnectivityManager.CONNECTIVITY_ACTION");
